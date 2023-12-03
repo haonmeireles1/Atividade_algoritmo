@@ -1,0 +1,203 @@
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <time.h>
+
+#define MAX_USERS 1000
+#define MAX_NAME_LENGTH 50
+#define MAX_EMAIL_LENGTH 50
+#define MAX_ADDRESS_LENGTH 100
+
+typedef struct {
+    int id;
+    char name[MAX_NAME_LENGTH];
+    char email[MAX_EMAIL_LENGTH];
+    char gender[MAX_NAME_LENGTH];
+    char address[MAX_ADDRESS_LENGTH];
+    double height;
+    int vaccine;
+} User;
+
+int generateUniqueId() {
+    return rand() % 1000 + 1; // Gera um ID aleatório entre 1 e 1000
+}
+
+int findUserIndex(User users[], int id, int totalUsers) {
+    for (int i = 0; i < totalUsers; i++) {
+        if (users[i].id == id) {
+            return i;
+        }
+    }
+    return -1; // Retorna -1 se o usuário não for encontrado
+}
+
+void printUser(User user) {
+    printf("\nID: %d\nNome: %s\nEmail: %s\nSexo: %s\nEndereço: %s\nAltura: %.2f\nVacina: %s\n",
+           user.id, user.name, user.email, user.gender, user.address, user.height, user.vaccine ? "Sim" : "Não");
+}
+
+void printAllUsers(User users[], int totalUsers) {
+    printf("\n--- Lista de Usuários ---\n");
+    for (int i = 0; i < totalUsers; i++) {
+        printf("\nUsuário %d:\n", i + 1);
+        printUser(users[i]);
+    }
+    printf("\n");
+}
+
+void addUser(User users[], int *totalUsers) {
+    if (*totalUsers >= MAX_USERS) {
+        printf("Capacidade máxima de usuários atingida.\n");
+        return;
+    }
+
+    User newUser;
+    newUser.id = generateUniqueId();
+
+    printf("Digite o nome completo: ");
+    scanf(" %[^\n]s", newUser.name);
+
+    printf("Digite o email: ");
+    scanf(" %[^\n]s", newUser.email);
+
+    // Validação do email
+    if (strchr(newUser.email, '@') == NULL) {
+        printf("Email inválido. Deve conter '@'.\n");
+        return;
+    }
+
+    printf("Digite o sexo (Feminino, Masculino ou Indiferente): ");
+    scanf(" %[^\n]s", newUser.gender);
+
+    // Validação do sexo
+    if (strcmp(newUser.gender, "Feminino") != 0 && strcmp(newUser.gender, "Masculino") != 0 && strcmp(newUser.gender, "Indiferente") != 0) {
+        printf("Sexo inválido.\n");
+        return;
+    }
+
+    printf("Digite o endereço: ");
+    scanf(" %[^\n]s", newUser.address);
+
+    printf("Digite a altura (entre 1 e 2 metros): ");
+    scanf("%lf", &newUser.height);
+
+    // Validação da altura
+    if (newUser.height < 1.0 || newUser.height > 2.0) {
+        printf("Altura inválida. Deve estar entre 1 e 2 metros.\n");
+        return;
+    }
+
+    printf("Usuário vacinado? (1 para Sim, 0 para Não): ");
+    scanf("%d", &newUser.vaccine);
+
+    users[*totalUsers] = newUser;
+    (*totalUsers)++;
+    printf("Usuário adicionado com sucesso!\n");
+}
+
+void editUser(User users[], int totalUsers) {
+    int id;
+    printf("Digite o ID do usuário que deseja editar: ");
+    scanf("%d", &id);
+
+    int userIndex = findUserIndex(users, id, totalUsers);
+    if (userIndex == -1) {
+        printf("Usuário não encontrado.\n");
+        return;
+    }
+
+    printUser(users[userIndex]);
+    printf("\nDigite os novos dados do usuário:\n");
+
+    // Código para editar um usuário é semelhante ao código usado para adicionar um usuário
+    // Você pode seguir um fluxo semelhante de scanf e validações para cada campo desejado
+    // Aqui, por simplicidade, vamos apenas alterar o nome
+
+    printf("Digite o novo nome: ");
+    scanf(" %[^\n]s", users[userIndex].name);
+
+    printf("Usuário editado com sucesso!\n");
+}
+
+void deleteUser(User users[], int *totalUsers) {
+    int id;
+    printf("Digite o ID do usuário que deseja excluir: ");
+    scanf("%d", &id);
+
+    int userIndex = findUserIndex(users, id, *totalUsers);
+    if (userIndex == -1) {
+        printf("Usuário não encontrado.\n");
+        return;
+    }
+
+    for (int i = userIndex; i < *totalUsers - 1; i++) {
+        users[i] = users[i + 1];
+    }
+
+    (*totalUsers)--;
+    printf("Usuário excluído com sucesso!\n");
+}
+
+void searchUserByEmail(User users[], int totalUsers) {
+    char email[MAX_EMAIL_LENGTH];
+    printf("Digite o email do usuário que deseja buscar: ");
+    scanf(" %[^\n]s", email);
+
+    int found = 0;
+    printf("\n--- Resultado da Busca ---\n");
+    for (int i = 0; i < totalUsers; i++) {
+        if (strcmp(users[i].email, email) == 0) {
+            found = 1;
+            printf("Usuário encontrado:\n");
+            printUser(users[i]);
+            break;
+        }
+    }
+
+    if (!found) {
+        printf("Nenhum usuário encontrado com o email fornecido.\n");
+    }
+}
+
+int main() {
+    srand(time(NULL));
+    User users[MAX_USERS];
+    int totalUsers = 0;
+    char option;
+
+    do {
+        printf("\nEscolha uma opção:\n");
+        printf("1. Adicionar usuário\n");
+        printf("2. Editar usuário\n");
+        printf("3. Excluir usuário\n");
+        printf("4. Buscar usuário por email\n");
+        printf("5. Imprimir todos os usuários\n");
+        printf("0. Sair\n");
+        scanf(" %c", &option);
+
+        switch (option) {
+            case '1':
+                addUser(users, &totalUsers);
+                break;
+            case '2':
+                editUser(users, totalUsers);
+                break;
+            case '3':
+                deleteUser(users, &totalUsers);
+                break;
+            case '4':
+                searchUserByEmail(users, totalUsers);
+                break;
+            case '5':
+                printAllUsers(users, totalUsers);
+                break;
+            case '0':
+                printf("Saindo do programa. Até mais!\n");
+                break;
+            default:
+                printf("Opção inválida. Tente novamente.\n");
+        }
+    } while (option != '0');
+
+    return 0;
+}
